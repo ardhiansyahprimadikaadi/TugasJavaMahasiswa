@@ -12,17 +12,14 @@ public class mahasiswa {
     public int id;
     public String nim;
     public String nama;
-    public int tahunmasuk;
     
-    public mahasiswa(String nim, String nama, int tahunmasuk){
+    public mahasiswa(String nim, String nama){
         this.nim = nim;
         this.nama = nama;
-        this.tahunmasuk = tahunmasuk;
     }
-    public mahasiswa(int id, String nim, String nama, int tahunmasuk){
+    public mahasiswa(int id, String nim, String nama){
         this.id = id;
         this.nama = nama;
         this.nim = nim;
-        this.tahunmasuk = tahunmasuk;
     }    
 }

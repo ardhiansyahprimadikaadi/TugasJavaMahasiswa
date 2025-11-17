@@ -36,13 +36,12 @@ public class JavaDatabaseOop {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
     public static void insert(mahasiswa m) throws SQLException {
-        String sql = "INSERT INTO mahasiswa(nim, nama, tahunmasuk) VALUES(?, ?, ?)";
+        String sql = "INSERT INTO mahasiswa(nim, nama) VALUES(?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, m.nim);
-            ps.setString(2, m.nama);
-            ps.setInt(3, m.tahunmasuk);  
+            ps.setString(2, m.nama);  
             ps.executeUpdate();
             System.out.println("Data berhasil ditambahkan.");
         } catch (SQLException e) {
@@ -52,8 +51,7 @@ public class JavaDatabaseOop {
     }
     public static List<mahasiswa> getAllmahasiswa() {
         List<mahasiswa> list = new ArrayList<>();
-        // Asumsi ada kolom 'id' sebagai primary key
-        String sql = "SELECT id, nim, nama, tahunmasuk FROM mahasiswa ORDER BY id"; 
+        String sql = "SELECT id, nim, nama FROM mahasiswa ORDER BY id"; 
         
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
@@ -61,10 +59,9 @@ public class JavaDatabaseOop {
 
             while (rs.next()) {
                 mahasiswa m = new mahasiswa(
-                    rs.getInt("id"),         // Ambil ID
+                    rs.getInt("id"),         
                     rs.getString("nim"),     
-                    rs.getString("nama"),    // <-- Diperbaiki: dari "name" ke "nama"
-                    rs.getInt("tahunmasuk")
+                    rs.getString("nama")  
                 );
                 list.add(m);
             }
@@ -73,15 +70,14 @@ public class JavaDatabaseOop {
         }
         return list;  
     }
-    public static void update(mahasiswa m) throws SQLException {
-        // Asumsi 'nim' tidak diubah, karena biasanya primary key
-        String sql = "UPDATE mahasiswa SET nama = ?, tahunmasuk = ? WHERE id = ?";
+    public static void edit(mahasiswa m) throws SQLException {
+        String sql = "UPDATE mahasiswa SET nama = ?,nim = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, m.nama);
-            stmt.setInt(2, m.tahunmasuk);
-            stmt.setInt(3, m.id); // 'id' digunakan sebagai penanda
+            stmt.setString(2, m.nim); 
+            stmt.setInt(3, m.id);
             stmt.executeUpdate();
             System.out.println("Data berhasil diperbarui.");
         } catch (SQLException e) {
@@ -89,8 +85,8 @@ public class JavaDatabaseOop {
             throw e;
         }
     }
-    public static void delete(int id) throws SQLException {
-        String sql = "DELETE FROM mahasiswa WHERE id = ?"; // <-- Diperbaiki: dari "items" ke "mahasiswa"
+    public static void hapus(int id) throws SQLException {
+        String sql = "DELETE FROM mahasiswa WHERE id = ?"; 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

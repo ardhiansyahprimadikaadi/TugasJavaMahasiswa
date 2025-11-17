@@ -73,7 +73,6 @@ public class JavaDatabase {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, m.nama);
-            stmt.setInt(2, m.tahunmasuk);
             stmt.setInt(3, m.id);
             stmt.executeUpdate();
             System.out.println("Data berhasil diperbarui.");

@@ -4,9 +4,13 @@
  */
 package javadatabase;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.List;
 /**
  *
@@ -15,6 +19,8 @@ import java.util.List;
 public class DatabaseOop extends javax.swing.JFrame {
 
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DatabaseOop.class.getName());
+private mahasiswa selectedMahasiswa = null;
+
     public DatabaseOop() {
         initComponents();
         loadData();
@@ -26,30 +32,38 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
             public void mouseClicked(MouseEvent e) {
                 int row = tblMahasiswa.getSelectedRow();
                 if (row >= 0) {
-                    txtID.setText(tblMahasiswa.getValueAt(row, 0).toString());
-                    txtNIM.setText(tblMahasiswa.getValueAt(row, 1).toString());
-                    txtNama.setText(tblMahasiswa.getValueAt(row, 2).toString());
-                    txtTahunMasuk.setText(tblMahasiswa.getValueAt(row, 3).toString());
+                    int id = Integer.parseInt(tblMahasiswa.getModel().getValueAt(row, 0).toString());
+                    String nim = tblMahasiswa.getModel().getValueAt(row, 1).toString();
+                    String nama = tblMahasiswa.getModel().getValueAt(row, 2).toString();
+ 
+                    selectedMahasiswa = new mahasiswa(id, nim, nama);
+                    txtNama.setText(nama);
+                    txtNIM.setText(nim);
                 }
             }
         });
     }
     private void loadData() {
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "NIM", "Nama", "Tahun Masuk"}, 0);
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "NIM", "Nama"}, 0);
         List<mahasiswa> list = JavaDatabaseOop.getAllmahasiswa();
+        
         for (mahasiswa m : list) {
-            model.addRow(new Object[]{m.id, m.nim, m.nama, m.tahunmasuk});
-        }
+            model.addRow(new Object[]{m.id, m.nim, m.nama});
+        }       
         tblMahasiswa.setModel(model);
+        tblMahasiswa.moveColumn(2, 0); 
+        tblMahasiswa.moveColumn(2, 1); 
+        
+        tblMahasiswa.getColumnModel().getColumn(2).setMinWidth(0);
+        tblMahasiswa.getColumnModel().getColumn(2).setMaxWidth(0);
+        tblMahasiswa.getColumnModel().getColumn(2).setWidth(0);
     }
 
     private void clearForm() {
-        txtID.setText("");
-        txtNIM.setText("");
         txtNama.setText("");
-        txtTahunMasuk.setText("");
+        txtNIM.setText("");
+        selectedMahasiswa = null;
         
-        txtID.setEditable(false); 
         btnTambah.setEnabled(true);
         tblMahasiswa.clearSelection();
     }
@@ -64,36 +78,29 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
     private void initComponents() {
 
         lblMahasiswa = new javax.swing.JLabel();
-        lblID = new javax.swing.JLabel();
-        lblNama = new javax.swing.JLabel();
         lblNIM = new javax.swing.JLabel();
-        lblTahunMasuk = new javax.swing.JLabel();
-        txtID = new javax.swing.JTextField();
-        txtNama = new javax.swing.JTextField();
+        lblNama = new javax.swing.JLabel();
         txtNIM = new javax.swing.JTextField();
-        txtTahunMasuk = new javax.swing.JTextField();
+        txtNama = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblMahasiswa = new javax.swing.JTable();
         btnTambah = new javax.swing.JButton();
-        btnUpdate = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
+        btnEdit = new javax.swing.JButton();
+        btnHapus = new javax.swing.JButton();
+        btnUploudCSv = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         lblMahasiswa.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblMahasiswa.setText("Tabel Mahasiswa");
 
-        lblID.setText("ID");
+        lblNIM.setText("NIM");
 
         lblNama.setText("Nama");
 
-        lblNIM.setText("NIM");
-
-        lblTahunMasuk.setText("Tahun Masuk");
-
-        txtID.addActionListener(new java.awt.event.ActionListener() {
+        txtNIM.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtIDActionPerformed(evt);
+                txtNIMActionPerformed(evt);
             }
         });
 
@@ -103,21 +110,15 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
             }
         });
 
-        txtNIM.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNIMActionPerformed(evt);
-            }
-        });
-
         tblMahasiswa.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
             },
             new String [] {
-                "ID", "NIM", "Nama", "Tahun Masuk"
+                "Nama", "NIM"
             }
         ));
         jScrollPane1.setViewportView(tblMahasiswa);
@@ -129,17 +130,24 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
             }
         });
 
-        btnUpdate.setText("Update");
-        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+        btnEdit.setText("Edit");
+        btnEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateActionPerformed(evt);
+                btnEditActionPerformed(evt);
             }
         });
 
-        btnDelete.setText("Delete");
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+        btnHapus.setText("Hapus");
+        btnHapus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
+                btnHapusActionPerformed(evt);
+            }
+        });
+
+        btnUploudCSv.setText("UnggahCSV");
+        btnUploudCSv.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploudCSvActionPerformed(evt);
             }
         });
 
@@ -148,45 +156,36 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(55, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(189, 189, 189)
-                        .addComponent(lblMahasiswa))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(txtNIM, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(189, 189, 189)
+                                .addComponent(lblMahasiswa))
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addGap(243, 243, 243)
-                                    .addComponent(btnUpdate))
                                 .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(btnUploudCSv)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(btnTambah)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(btnEdit)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(btnHapus))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                     .addGap(59, 59, 59)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(lblNama, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(39, 39, 39)
-                                            .addComponent(txtNama))
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(lblID, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(39, 39, 39)
-                                            .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addGap(57, 57, 57)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(lblNIM, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(lblTahunMasuk))))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(61, 61, 61)
-                                    .addComponent(btnDelete))
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(txtTahunMasuk, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnTambah)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(83, Short.MAX_VALUE))
+                                        .addComponent(lblNama, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGap(39, 39, 39)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(txtNama, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                        .addComponent(txtNIM)))))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap(87, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -195,21 +194,18 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
                 .addComponent(lblMahasiswa)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblID)
-                    .addComponent(lblNIM)
-                    .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtNIM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblNama)
+                    .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(37, 37, 37)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblNama)
-                    .addComponent(lblTahunMasuk)
-                    .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTahunMasuk, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblNIM)
+                    .addComponent(txtNIM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(47, 47, 47)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnTambah)
-                    .addComponent(btnUpdate)
-                    .addComponent(btnDelete))
+                    .addComponent(btnEdit)
+                    .addComponent(btnHapus)
+                    .addComponent(btnUploudCSv))
                 .addGap(36, 36, 36)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(53, Short.MAX_VALUE))
@@ -220,80 +216,108 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
 
     private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed
         try {
-            if (txtNIM.getText().isEmpty() || txtNama.getText().isEmpty() || txtTahunMasuk.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Semua field harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
+            if (txtNama.getText().isEmpty() || txtNIM.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "NIM dan Nama harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            String nim = txtNIM.getText(); 
+            String nim = txtNIM.getText();    
             String nama = txtNama.getText();
-            int tahun = Integer.parseInt(txtTahunMasuk.getText());
-            mahasiswa m = new mahasiswa(nim, nama, tahun);            
-            JavaDatabaseOop.insert(m);            
+            mahasiswa m = new mahasiswa(nim, nama);            
+            JavaDatabaseOop.insert(m);              
             JOptionPane.showMessageDialog(this, "Data berhasil ditambahkan!");
-            loadData(); 
-            clearForm(); 
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Tahun Masuk harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
+            loadData();  
+            clearForm();  
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error tambah: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }//GEN-LAST:event_btnTambahActionPerformed
 
-    private void txtNIMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNIMActionPerformed
+    private void txtNamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtNIMActionPerformed
+    }//GEN-LAST:event_txtNamaActionPerformed
 
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
         try {
-            if (txtID.getText().isEmpty() || txtNIM.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Pilih data dari tabel terlebih dahulu!", "Error", JOptionPane.ERROR_MESSAGE);
+            if (selectedMahasiswa == null) {
+                JOptionPane.showMessageDialog(this, "Pilih tabel terlebih dahulu!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            int id = Integer.parseInt(txtID.getText());
-            String nim = txtNIM.getText(); 
+            String nim = txtNIM.getText();    
             String nama = txtNama.getText();
-            int tahun = Integer.parseInt(txtTahunMasuk.getText());
-            mahasiswa m = new mahasiswa(id, nim, nama, tahun);           
-            JavaDatabaseOop.update(m);           
+            mahasiswa m = new mahasiswa(selectedMahasiswa.id, nim, nama);            
+            JavaDatabaseOop.edit(m);              
             JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
             loadData();
             clearForm();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Tahun Masuk harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error update: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-    }//GEN-LAST:event_btnUpdateActionPerformed
+    }//GEN-LAST:event_btnEditActionPerformed
 
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+    private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
         try {
-            if (txtID.getText().isEmpty()) {
+            if (selectedMahasiswa == null) {
                 JOptionPane.showMessageDialog(this, "Pilih data dari tabel yang akan dihapus!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
-            }
-            int id = Integer.parseInt(txtID.getText());           
-            int a = JOptionPane.showConfirmDialog(this, "Apakah Anda yakin ingin menghapus data dengan ID: " + id + "?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+            }          
+            int id = selectedMahasiswa.id;
+            int a = JOptionPane.showConfirmDialog(this, "Apakah Anda yakin ingin menghapus data: " + selectedMahasiswa.nama + "?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
             if (a == JOptionPane.YES_OPTION) {
-                JavaDatabaseOop.delete(id);
+                JavaDatabaseOop.hapus(id);
                 JOptionPane.showMessageDialog(this, "Data berhasil dihapus!");
                 loadData();
                 clearForm();
-            }          
+            }            
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error delete: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-    }//GEN-LAST:event_btnDeleteActionPerformed
+    }//GEN-LAST:event_btnHapusActionPerformed
 
-    private void txtIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIDActionPerformed
+    private void txtNIMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNIMActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtIDActionPerformed
+    }//GEN-LAST:event_txtNIMActionPerformed
 
-    private void txtNamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtNamaActionPerformed
+    private void btnUploudCSvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploudCSvActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Pilih File CSV");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("File CSV (*.csv)", "csv"));
+        
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            String line;
+            int count = 0;
+            
+            try (BufferedReader br = new BufferedReader(new FileReader(selectedFile))) {
+                br.readLine();  
+                while ((line = br.readLine()) != null) {
+                    String[] data = line.split(",");
+                    
+                    if (data.length >= 2) {  
+                        try {
+                            String nama = data[0].trim();
+                            String nim = data[1].trim();
+                            mahasiswa m = new mahasiswa(nim, nama);
+                            JavaDatabaseOop.insert(m);
+                            count++;
+                        } catch (Exception e) { 
+                            logger.warning("Error memasukkan baris: " + line + " - " + e.getMessage());
+                        }
+                    } else {
+                        logger.warning("Melewatkan baris (format tidak valid, perlu 2 kolom): " + line);
+                    }
+                }             
+                JOptionPane.showMessageDialog(this, count + " data berhasil diunggah dari CSV!");
+                loadData();             
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error membaca file CSV: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_btnUploudCSvActionPerformed
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -309,19 +333,16 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
         java.awt.EventQueue.invokeLater(() -> new DatabaseOop().setVisible(true));
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnTambah;
-    private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnUploudCSv;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblID;
     private javax.swing.JLabel lblMahasiswa;
     private javax.swing.JLabel lblNIM;
     private javax.swing.JLabel lblNama;
-    private javax.swing.JLabel lblTahunMasuk;
     private javax.swing.JTable tblMahasiswa;
-    private javax.swing.JTextField txtID;
     private javax.swing.JTextField txtNIM;
     private javax.swing.JTextField txtNama;
-    private javax.swing.JTextField txtTahunMasuk;
     // End of variables declaration//GEN-END:variables
 }
