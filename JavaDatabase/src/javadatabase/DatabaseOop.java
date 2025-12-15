@@ -39,12 +39,11 @@ private mahasiswa selectedMahasiswa = null;
                     int id = Integer.parseInt(tblMahasiswa.getModel().getValueAt(row, 0).toString());
                     String nim = tblMahasiswa.getModel().getValueAt(row, 1).toString();
                     String nama = tblMahasiswa.getModel().getValueAt(row, 2).toString();
-                    int tahun = Integer.parseInt(tblMahasiswa.getModel().getValueAt(row, 3).toString()); 
-                    String jenis = tblMahasiswa.getModel().getValueAt(row, 4).toString(); 
-                    int sks = Integer.parseInt(tblMahasiswa.getModel().getValueAt(row, 5).toString()); 
-                    double biaya = Double.parseDouble(tblMahasiswa.getModel().getValueAt(row, 6).toString()); 
+                    String jenis = tblMahasiswa.getModel().getValueAt(row, 3).toString(); 
+                    int sks = Integer.parseInt(tblMahasiswa.getModel().getValueAt(row, 4).toString()); 
+                    double biaya = Double.parseDouble(tblMahasiswa.getModel().getValueAt(row, 5).toString()); 
                     
-                    selectedMahasiswa = JavaDatabaseOop.createMahasiswaObject(id, nim, nama, tahun, jenis, sks);
+                    selectedMahasiswa = JavaDatabaseOop.createMahasiswaObject(id, nim, nama, jenis, sks);
                     
                     txtNama.setText(nama);
                     txtNIM.setText(nim);
@@ -57,11 +56,11 @@ private mahasiswa selectedMahasiswa = null;
         });
     }
     private void loadData() {
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "NIM", "Nama", "Tahun Masuk", "Jenis", "SKS", "Biaya Kuliah"}, 0);
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "NIM", "Nama", "Jenis", "SKS", "Biaya Kuliah"}, 0);
         List<mahasiswa> list = JavaDatabaseOop.getAllmahasiswa();
         
         for (mahasiswa m : list) {
-            model.addRow(new Object[]{m.id, m.nim, m.nama, m.tahunmasuk, m.jenisMahasiswa, m.jumlahSKS, m.getBiayaKuliah()});
+            model.addRow(new Object[]{m.id, m.nim, m.nama, m.jenisMahasiswa, m.jumlahSKS, m.getBiayaKuliah()});
         }        
         tblMahasiswa.setModel(model);
         tblMahasiswa.getColumnModel().getColumn(0).setMinWidth(0);
@@ -75,10 +74,9 @@ private mahasiswa selectedMahasiswa = null;
         cmbJenisMahasiswa.setSelectedIndex(0); 
         jLabel3.setText("Rp 0,00"); 
         selectedMahasiswa = null;
-        
         btnTambah.setEnabled(true);
         tblMahasiswa.clearSelection();
-    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -271,8 +269,8 @@ private mahasiswa selectedMahasiswa = null;
             String jenis = cmbJenisMahasiswa.getSelectedItem().toString(); 
             int sks = Integer.parseInt(txtSKS.getText()); 
             
-            int tahun = 0;
-            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(nim, nama, tahun, jenis, sks); 
+            int tahun = java.time.Year.now().getValue();
+            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(nim, nama, jenis, sks);
             
             JavaDatabaseOop.insert(m);              
             JOptionPane.showMessageDialog(this, "Data berhasil ditambahkan!");
@@ -304,9 +302,8 @@ private mahasiswa selectedMahasiswa = null;
             String nama = txtNama.getText();
             String jenis = cmbJenisMahasiswa.getSelectedItem().toString();
             int sks = Integer.parseInt(txtSKS.getText());
-            int tahun = selectedMahasiswa.tahunmasuk;
-            
-            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(selectedMahasiswa.id, nim, nama, tahun, jenis, sks);            
+         
+            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(selectedMahasiswa.id, nim, nama, jenis, sks);            
             
             JavaDatabaseOop.edit(m);               
             JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
@@ -365,11 +362,10 @@ private mahasiswa selectedMahasiswa = null;
                         try {
                             String nim = data[0].trim();
                             String nama = data[1].trim();
-                            int tahun = Integer.parseInt(data[2].trim()); 
-                            String jenis = data[3].trim(); 
-                            int sks = Integer.parseInt(data[4].trim()); 
+                            String jenis = data[2].trim(); 
+                            int sks = Integer.parseInt(data[3].trim()); 
                             
-                            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(nim, nama, tahun, jenis, sks);
+                            mahasiswa m = JavaDatabaseOop.createMahasiswaObject(nim, nama, jenis, sks);
                             JavaDatabaseOop.insert(m);
                             count++;
                         } catch (NumberFormatException e) {
